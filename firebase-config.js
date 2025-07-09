@@ -1,6 +1,9 @@
 // Importation des modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js ";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js ";
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js ';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js ';
+
 
 // Configuration Firebase (depuis la console Firebase)
 const firebaseConfig = {
@@ -16,7 +19,9 @@ const firebaseConfig = {
 // Initialisation de Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
+export { auth, db, onAuthStateChanged, collection, addDoc };
 // Exporter l'authentification pour l'utiliser dans login.js
 window.auth = auth;
 window.signInWithEmailAndPassword = signInWithEmailAndPassword;

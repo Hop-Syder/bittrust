@@ -21,3 +21,5 @@ loginForm.addEventListener('submit', async (e) => {
         alert("Identifiants invalides ou utilisateur inexistant.");
     }
 });
+
+
