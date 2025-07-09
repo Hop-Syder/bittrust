@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <!-- Métadonnées de base -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>BitTrust Capital | Tableau de bord client</title>
+    <meta name="description"
+        content="Tableau de bord client BitTrust Capital - Accédez à votre compte, historique et paramètres">
+    <meta name="keywords"
+        content="banque en ligne, compte client, historique transactions, paramètres compte, BitTrust Capital">
+    <meta name="author" content="BitTrust Capital">
+
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo/favicon.ico" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #003366;
+            --accent-color: #00a8e8;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            padding-bottom: 80px;
+        }
+
+        .bank-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+        }
+
+        .bank-header img {
+            height: 60px;
+        }
+
+        .profile-card {
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--light-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 15px rgba(0, 56, 179, 0.2);
+        }
+
+        .balance-amount {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .currency-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .transactions-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .no-transactions {
+            text-align: center;
+            color: var(--dark-color);
+        }
+
+        .no-transactions i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--dark-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button i {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-button.active {
+            color: var(--primary-color);
+            background-color: rgba(0, 86, 179, 0.1);
+        }
+
+        .nav-button:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .balance-amount {
+                font-size: 1.8rem;
+            }
+
+            .profile-picture {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+    <style>
+        /* Ajoutez ce code dans la balise <style> de votre document */
+
+        body {
+            background: linear-gradient(135deg,
+                    rgba(0, 86, 179, 0.1) 0%,
+                    /* Bleu très léger */
+                    rgba(220, 53, 69, 0.1) 100%
+                    /* Rouge très léger */
+                ), white;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        /* Pour renforcer l'effet de mélange */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    rgb(206, 0, 0) 0%,
+                    /* Bleu transparent */
+                    rgb(0, 4, 214) 100%
+                    /* Rouge transparent */
+                );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Assurez-vous que les cartes restent bien visibles */
+        .profile-card,
+        .transactions-container,
+        .balance-card {
+            background-color: rgba(255, 255, 255, 0.377);
+            /* Blanc légèrement transparent */
+            backdrop-filter: blur(5px);
+            /* Effet de flou pour mieux faire ressortir */
+        }
+
+        /* Version plus prononcée si vous voulez des couleurs plus visibles */
+        /*
+    body {
+        background: linear-gradient(135deg, 
+            #0056b3 0%,       /* Bleu BitTrust */
+        #dc3545 100%
+        /* Rouge Bootstrap */
+        );
+        background-attachment: fixed;
+        }
+
+        */
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid px-0">
+
+        <!-- Header avec logo -->
+        <header class="bank-header animate__animated animate__fadeIn">
+            <img src="images/logo/lg.png" alt="BitTrust Capital Logo" class="img-fluid">
+            <div class="flex-grow-1 text-center">
+                <h1 class="m-0 d-none d-md-block">BitTrust Capital - Tableau de bord</h1>
+            </div>
+            <a href="index.html" class="btn btn-primary rounded-pill d-flex align-items-center"
+                style="font-weight:600; min-width:110px;">
+                <i class="fas fa-home me-2"></i> Accueil
+            </a>
+
+        </header>
+
+        <main class="container">
+
+            <!-- Section Profil -->
+            <section class="row justify-content-center animate__animated animate__fadeInUp">
+                <div class="col-lg-8 col-md-10 profile-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <img src="images/logo/profil.png" alt="Photo de profil" class="profile-picture mb-3">
+                        </div>
+                        <div class="col-md-9" style="color: #fff;">
+                            <h2 class="mb-1" style="color: #fff;">John Doe</h2>
+                            <p class="text-muted mb-2" style="color: #fff !important;">
+                                <i class="fas fa-envelope me-2"></i>john.doe@example.com
+                            </p>
+                            <p class="text-muted" style="color: #fff !important;">
+                                <i class="fas fa-id-card me-2"></i>ID: BT-0674CAPITAL23
+                            </p>
+                            <div class="d-flex mt-3">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    style="color: #fff; border-color: #fff;">
+                                    <i class="fas fa-lock me-1"></i> Sécurité
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Solde -->
+            <section class="row justify-content-center animate__animated animate__fadeInUp">
+                <div class="col-lg-8 col-md-10 balance-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="m-0">Solde actuel</h3>
+                        <button class="btn btn-sm btn-light">
+                            <i class="fas fa-exchange-alt me-1"></i> Convertir
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="balance-amount me-3">£0,00</span>
+                        <span class="currency-badge p-2 rounded">GBP</span>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <a href="fr-ordres-BC_0725BIT34TRUST549CAPITAL120947.html" class="btn btn-sm btn-light me-2">
+                            <i class="fas fa-plus me-1"></i> Dépôt
+                        </a>
+                        <a href="fr-ordres-BC_0725BIT34TRUST549CAPITAL120947.html" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-up me-1"></i> Transfert
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Transactions -->
+            <section class="row justify-content-center animate__animated animate__fadeInUp">
+                <div class="col-lg-8 col-md-10">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="m-0" style="color: #fff;">Historique des transactions</h3>
+                        <div class="filter-buttons">
+                            <button class="btn btn-sm btn-outline-primary me-2 filter-btn active" data-filter="all">
+                                <i class="fas fa-list me-1"></i> Tous
+                            </button>
+                            <button class="btn btn-sm btn-outline-success me-2 filter-btn" data-filter="credit">
+                                <i class="fas fa-arrow-down me-1"></i> Crédits
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger filter-btn" data-filter="debit">
+                                <i class="fas fa-arrow-up me-1"></i> Débits
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="transactions-container">
+                        <div class="no-transactions">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4 class="mt-3" style="color: #fff;">Aucune transaction récente</h4>
+                            <p class="text-muted" style="color: #fff !important;">Votre historique de transactions
+                                apparaîtra ici
+                            </p>
+                            <button class="btn btn-primary mt-3">
+                                <i class="fas fa-plus me-1" style="color: #fff;"></i> Nouvelle transaction
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Conteneur pour le logo BitTrust -->
+        <div class="d-flex justify-content-center my-4">
+            <div id="bittrust-logo-container">
+                <!-- Ajoutez ici votre logo BitTrust -->
+                <img src="images/logo/lg.png" alt="Logo BitTrust" style="height: 80px;">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation footer -->
+    <nav class="footer-nav">
+        <div class="nav-buttons container">
+            <a href="#" class="nav-button active">
+                <i class="fas fa-user"></i>
+                <span>Profil</span>
+            </a>
+            <a href="fr-ordres-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Ordres</span>
+            </a>
+            <a href="fr-historique-BC_0725BIT34TRUST549CAPITAL120947 copy.html" class="nav-button">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animation des cartes au survol
+            const cards = document.querySelectorAll('.profile-card, .balance-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Filtrage des transactions
+            const filterButtons = document.querySelectorAll('.filter-btn');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Ici vous ajouteriez la logique pour filtrer les transactions
+                    // Pour l'exemple, nous affichons simplement un message
+                    const transactionsContainer = document.querySelector('.transactions-container');
+                    transactionsContainer.innerHTML = `
+                        <div class="no-transactions">
+                            <i class="fas fa-filter"></i>
+                            <h4 class="mt-3">Filtre appliqué: ${this.textContent.trim()}</h4>
+                            <p class="text-muted">Aucune transaction correspondante</p>
+                        </div>
+                    `;
+                });
+            });
+
+            // Gestion des boutons de navigation
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    if (!this.classList.contains('active')) {
+                        navButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

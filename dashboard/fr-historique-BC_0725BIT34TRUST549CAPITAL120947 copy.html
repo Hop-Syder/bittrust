@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <!-- Métadonnées de base -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>BitTrust Capital | Historique des Transactions</title>
+    <meta name="description" content="Historique de vos transactions avec BitTrust Capital">
+
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo/favicon.ico" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-blue: #1a237e;
+            --primary-red: #c62828;
+            --accent-color: #ff5252;
+            --light-bg: #f5f5f5;
+            --dark-text: #212121;
+            --light-text: #757575;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
+            /* Espace pour le footer */
+        }
+
+        /* Header Responsive */
+        .bank-header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 1rem 0;
+            position: relative;
+            border-bottom: 5px solid var(--primary-red);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+            margin-right: 15px;
+        }
+
+        .bank-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .logo-img {
+                height: 30px;
+            }
+
+            .bank-name {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-img {
+                height: 25px;
+                margin-right: 10px;
+            }
+
+            .bank-name {
+                font-size: 1rem;
+            }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        /* Profile Section */
+        .profile-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--primary-blue);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-picture {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-blue);
+            margin-right: 1.5rem;
+        }
+
+        .profile-info h2 {
+            margin: 0;
+            color: var(--primary-blue);
+        }
+
+        .profile-info p {
+            margin: 0.3rem 0;
+            color: var(--light-text);
+        }
+
+        /* Transactions Section */
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--light-text);
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .transactions-list {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .transaction-item {
+            padding: 1.2rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--dark-text);
+        }
+
+        .transaction-date {
+            font-size: 0.85rem;
+            color: var(--light-text);
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .credit {
+            color: var(--primary-blue);
+        }
+
+        .debit {
+            color: var(--primary-red);
+        }
+
+        .transaction-status {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-pending {
+            background-color: #fff8e1;
+            color: #ff8f00;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--light-text);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #e0e0e0;
+        }
+
+        /* Footer Navigation */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--light-text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button.active {
+            color: var(--primary-blue);
+            background-color: rgba(26, 35, 126, 0.1);
+        }
+
+        .nav-button i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-button span {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header avec logo et texte -->
+    <header class="bank-header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="../img/svg/bitrut.svg" alt="BitTrust Capital Logo" class="logo-img">
+                <h1 class="bank-name">BitTrust Capital</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Section Profil -->
+        <section class="profile-card">
+            <div class="profile-header">
+                <img src="https://via.placeholder.com/150" alt="Photo de profil" class="profile-picture">
+                <div class="profile-info">
+                    <h2>John Doe</h2>
+                    <p>john.doe@example.com</p>
+                    <p>ID Utilisateur: BT-123456789</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Historique -->
+        <section>
+            <div class="transactions-header">
+                <h2>Historique des Transactions</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="credit">Crédits</button>
+                    <button class="filter-btn" data-filter="debit">Débits</button>
+                </div>
+            </div>
+
+            <div class="transactions-list">
+                <!-- Transaction 1 -->
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-title">Virement reçu - Amazon UK</div>
+                        <div class="transaction-date">15 Mars 2023 à 14:30</div>
+                    </div>
+                    <div class="transaction-amount credit">+£125.00 <span
+                            class="transaction-status status-completed">Complété</span></div>
+                </div>
+
+                <!-- Transaction 2 -->
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-title">Achat en magasin - Sainsbury</div>
+                        <div class="transaction-date">14 Mars 2023 à 09:45</div>
+                    </div>
+                    <div class="transaction-amount debit">-£68.45 <span
+                            class="transaction-status status-completed">Complété</span></div>
+                </div>
+
+                <!-- Transaction 3 -->
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-title">Virement bancaire</div>
+                        <div class="transaction-date">10 Mars 2023 à 16:20</div>
+                    </div>
+                    <div class="transaction-amount credit">+£300.00 <span
+                            class="transaction-status status-completed">Complété</span></div>
+                </div>
+
+                <!-- Transaction 4 -->
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-title">Prélèvement Netflix</div>
+                        <div class="transaction-date">5 Mars 2023 à 08:00</div>
+                    </div>
+                    <div class="transaction-amount debit">-£10.99 <span
+                            class="transaction-status status-completed">Complété</span></div>
+                </div>
+
+                <!-- Transaction 5 -->
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-title">Dépôt d'espèces</div>
+                        <div class="transaction-date">1 Mars 2023 à 11:15</div>
+                    </div>
+                    <div class="transaction-amount credit">+£200.00 <span
+                            class="transaction-status status-completed">Complété</span></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer Navigation -->
+    <nav class="footer-nav">
+        <div class="nav-buttons">
+            <a href="fr-index-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button">
+                <i class="fas fa-user"></i>
+                <span>Compte</span>
+            </a>
+            <a href="fr-historique-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button active">
+                <i class="fas fa-history"></i>
+                <span>Historique</span>
+            </a>
+            <a href="fr-parametres-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button">
+                <i class="fas fa-cog"></i>
+                <span>Paramètres</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Filtrage des transactions
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const transactionItems = document.querySelectorAll('.transaction-item');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const filter = this.getAttribute('data-filter');
+
+                    // Mettre à jour le bouton actif
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filtrer les transactions
+                    transactionItems.forEach(item => {
+                        const isCredit = item.querySelector('.credit');
+                        const isDebit = item.querySelector('.debit');
+
+                        if (filter === 'all') {
+                            item.style.display = 'flex';
+                        } else if (filter === 'credit' && isCredit) {
+                            item.style.display = 'flex';
+                        } else if (filter === 'debit' && isDebit) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Navigation footer
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Mettre à jour le bouton actif
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Ici, vous pourriez charger le contenu correspondant
+                    console.log('Navigation vers:', this.querySelector('span').textContent);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
