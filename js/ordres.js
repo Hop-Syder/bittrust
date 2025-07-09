@@ -42,7 +42,7 @@ function setupOrderForm(user) {
         const currency = document.getElementById("amountCurrency").textContent;
 
         // Validation basique
-        if (!amount || isNaN(amount) {
+        if (!amount || isNaN(amount)) {
             alert("Veuillez entrer un montant valide");
             return;
         }
