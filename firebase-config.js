@@ -21,7 +21,16 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { auth, db, onAuthStateChanged, collection, addDoc };
+export {
+    auth,
+    db,
+    collection,
+    addDoc,
+    query,
+    where,
+    onSnapshot,
+    onAuthStateChanged
+};
 // Exporter l'authentification pour l'utiliser dans login.js
 window.auth = auth;
 window.signInWithEmailAndPassword = signInWithEmailAndPassword;
