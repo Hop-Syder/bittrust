@@ -435,6 +435,37 @@
             });
         });
     </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVycudiPGxEe60Ulw8991VUUj8_n8uJn8",
+            authDomain: "data-bittrust.firebaseapp.com",
+            projectId: "data-bittrust",
+            storageBucket: "data-bittrust.firebasestorage.app",
+            messagingSenderId: "279615547784",
+            appId: "1:279615547784:web:624a233334d4a6b382f23d",
+            measurementId: "G-YF9R0XJLY9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Vérification si connecté
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "connexion.html"; // Redirection forcée si non connecté
+            } else {
+                // Injection dynamique de l'email dans la page (optionnel)
+                const emailElem = document.getElementById('user-email');
+                if (emailElem) emailElem.textContent = user.email;
+            }
+        });
+    </script>
+
 </body>
 
 </html>

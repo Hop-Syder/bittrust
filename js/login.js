@@ -1,34 +1,23 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const loginForm = document.getElementById("loginForm");
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", function (e) {
-            e.preventDefault(); // Empêche le rechargement immédiat
 
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-            // Afficher le spinner pendant la connexion
-            document.getElementById('spinner').classList.add('show');
+// Récupération des éléments du DOM
+const loginForm = document.getElementById('loginForm');
+const auth = getAuth();
 
-            // Connexion Firebase
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Connexion réussie
-                    console.log("Connexion réussie :", userCredential.user);
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Empêche le rechargement de la page
 
-                    // Redirection après succès
-                    window.location.href = "fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html";
-                })
-                .catch((error) => {
-                    // Gestion des erreurs
-                    console.error("Erreur de connexion :", error.message);
-                    alert("Erreur : " + error.message);
-                })
-                .finally(() => {
-                    // Toujours cacher le spinner
-                    document.getElementById('spinner').classList.remove('show');
-                });
-        });
+    const email = loginForm.email.value;
+    const password = loginForm.password.value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // ✅ Connexion réussie → Redirection vers le profil
+        window.location.href = "fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html";
+    } catch (error) {
+        console.error("Erreur de connexion :", error.message);
+        alert("Identifiants invalides ou utilisateur inexistant.");
     }
 });
