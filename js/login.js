@@ -1,25 +1,42 @@
+// login.js
+import { auth } from '../firebase-config.js';
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
 
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-// Récupération des éléments du DOM
-const loginForm = document.getElementById('loginForm');
-import { auth, signInWithEmailAndPassword } from './firebase-config.js';
-// Utilise auth directement, ne fais pas getAuth() ici !
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('Connexion réussie:', userCredential.user);
+                window.location.href = 'fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html';
+            } catch (error) {
+                console.error('Erreur de connexion:', error.code, error.message);
 
-    const email = loginForm.email.value;
-    const password = loginForm.password.value;
+                let errorMessage = "Erreur de connexion";
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = "Email invalide";
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = "Compte désactivé";
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                        errorMessage = "Email ou mot de passe incorrect";
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
 
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // ✅ Connexion réussie → Redirection vers le profil
-        window.location.href = "fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html";
-    } catch (error) {
-        console.error("Erreur de connexion :", error.message);
-        alert("Identifiants invalides ou utilisateur inexistant.");
+                alert(errorMessage);
+            }
+        });
     }
 });
-
-
