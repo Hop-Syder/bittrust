@@ -1,10 +1,10 @@
 
 
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 // Récupération des éléments du DOM
 const loginForm = document.getElementById('loginForm');
-const auth = getAuth();
+import { auth, signInWithEmailAndPassword } from './firebase-config.js';
+// Utilise auth directement, ne fais pas getAuth() ici !
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // Empêche le rechargement de la page
