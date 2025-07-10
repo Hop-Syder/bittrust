@@ -192,6 +192,60 @@
             }
         }
     </style>
+    <style>
+        /* Ajoutez ce code dans la balise <style> de votre document */
+
+        body {
+            background: linear-gradient(135deg,
+                    rgba(0, 86, 179, 0.1) 0%,
+                    /* Bleu très léger */
+                    rgba(220, 53, 69, 0.1) 100%
+                    /* Rouge très léger */
+                ), white;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        /* Pour renforcer l'effet de mélange */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    rgb(206, 0, 0) 0%,
+                    /* Bleu transparent */
+                    rgb(0, 4, 214) 100%
+                    /* Rouge transparent */
+                );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Assurez-vous que les cartes restent bien visibles */
+        .profile-card,
+        .transactions-container,
+        .balance-card {
+            background-color: rgba(255, 255, 255, 0.377);
+            /* Blanc légèrement transparent */
+            backdrop-filter: blur(5px);
+            /* Effet de flou pour mieux faire ressortir */
+        }
+
+        /* Version plus prononcée si vous voulez des couleurs plus visibles */
+
+        body {
+            background: linear-gradient(135deg,
+                    #0056b3 0%,
+                    /* Bleu BitTrust */
+                    #dc3545 100%
+                    /* Rouge Bootstrap */
+                );
+            background-attachment: fixed;
+        }
+    </style>
 </head>
 
 <body>
