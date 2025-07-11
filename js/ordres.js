@@ -29,6 +29,37 @@ document.addEventListener('DOMContentLoaded', function () {
         { value: 'gbp', text: 'Livre Sterling (GBP)' }
     ];
 
+
+
+    function loadUserOrders(userId) {
+        const q = query(
+            collection(db, "ordres"),
+            where("userId", "==", userId),
+            orderBy("createdAt", "desc")
+        );
+
+        onSnapshot(q, snapshot => {
+            ordersContainer.innerHTML = "";
+
+            if (snapshot.empty) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
+                        <p style="color: #fff;">Vos ordres actifs apparaîtront ici</p>
+                    </div>
+                `;
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const card = createOrderCard(data.type, data.assetLabel, data.montant);
+                ordersContainer.appendChild(card);
+            });
+        });
+    }
+
     // Gestion de l'authentification
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -70,35 +101,6 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 console.error("Erreur enregistrement :", error);
             }
-        });
-    }
-
-    function loadUserOrders(userId) {
-        const q = query(
-            collection(db, "ordres"),
-            where("userId", "==", userId),
-            orderBy("createdAt", "desc")
-        );
-
-        onSnapshot(q, snapshot => {
-            ordersContainer.innerHTML = "";
-
-            if (snapshot.empty) {
-                ordersContainer.innerHTML = `
-                    <div class="no-orders">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
-                        <p style="color: #fff;">Vos ordres actifs apparaîtront ici</p>
-                    </div>
-                `;
-                return;
-            }
-
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const card = createOrderCard(data.type, data.assetLabel, data.montant);
-                ordersContainer.appendChild(card);
-            });
         });
     }
 
