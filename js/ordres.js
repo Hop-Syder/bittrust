@@ -327,11 +327,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Changement type d'ordre
         orderTypeSelect.addEventListener('change', updateFormFields);
 
-        // Boutons de filtre
-        document.querySelectorAll('.order-type-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+        // Filtres
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const filterType = this.textContent.toLowerCase();
+                filterOrders(filterType);
             });
         });
 
@@ -346,15 +347,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.style.boxShadow = '';
             });
         });
+    }
 
-        // Navigation
-        document.querySelectorAll('.nav-button').forEach(button => {
-            button.addEventListener('click', function () {
-                if (!this.classList.contains('active')) {
-                    document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                }
-            });
+    function filterOrders(type) {
+        const cards = document.querySelectorAll('.order-card');
+        cards.forEach(card => {
+            if (type === 'tous') {
+                card.style.display = '';
+            } else {
+                const cardType = card.classList.contains('buy') ? 'achats' :
+                    card.classList.contains('sell') ? 'ventes' :
+                        card.classList.contains('transfer') ? 'transferts' : '';
+                card.style.display = cardType.includes(type.toLowerCase()) ? '' : 'none';
+            }
         });
     }
 });
