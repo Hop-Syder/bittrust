@@ -29,8 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
         { value: 'gbp', text: 'Livre Sterling (GBP)' }
     ];
 
-
-
     function loadUserOrders(userId) {
         const q = query(
             collection(db, "ordres"),
@@ -56,6 +54,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = doc.data();
                 const card = createOrderCard(data.type, data.assetLabel, data.montant);
                 ordersContainer.appendChild(card);
+
+                // Ajout de cette partie manquante pour déclencher la progression
+                if (data.statut === "en attente") {
+                    setTimeout(() => showProgressAndPin(card), 1000);
+                }
             });
         });
     }
@@ -159,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 limitInput.readOnly = true;
                 rateInfo.style.display = 'block';
 
-                // Ajouter seulement EUR, USD, GBP
+                // Correction ici: suppression de la parenthèse en trop
                 allOptions.filter(opt => ['eur', 'usd', 'gbp'].includes(opt.value))
                     .forEach(currency => addOption(currency));
 
