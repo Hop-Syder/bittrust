@@ -1,6 +1,5 @@
 // js/ordres.js
-
-import { auth, db } from '../firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import {
     collection,
     addDoc,
@@ -20,18 +19,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const ordersContainer = document.querySelector('.orders-container');
 
+    // Options disponibles
+    const allOptions = [
+        { value: 'btc', text: 'Bitcoin (BTC)' },
+        { value: 'eth', text: 'Ethereum (ETH)' },
+        { value: 'usdt', text: 'Tether (USDT)' },
+        { value: 'eur', text: 'Euro (EUR)' },
+        { value: 'usd', text: 'Dollar (USD)' },
+        { value: 'gbp', text: 'Livre Sterling (GBP)' }
+    ];
 
+    // Gestion de l'authentification
     onAuthStateChanged(auth, user => {
         if (user) {
             const userId = user.uid;
-            setupOrderForm(userId);     // active la soumission du formulaire
-            loadUserOrders(userId);     // charge les anciens ordres
+            setupOrderForm(userId);
+            loadUserOrders(userId);
+            setupEventListeners();
         } else {
             alert("Veuillez vous connecter pour gérer vos ordres.");
-            window.location.href = "connexion.html"; // redirige si pas connecté
+            window.location.href = "connexion.html";
         }
     });
-
 
     function setupOrderForm(userId) {
         form.addEventListener('submit', async function (e) {
@@ -43,7 +52,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const amount = parseFloat(amountInput.value);
             const timestamp = new Date();
 
-            // Créer un objet à sauvegarder
             const ordreData = {
                 type: orderType,
                 asset: asset,
@@ -65,57 +73,71 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function loadUserOrders(userId) {
+        const q = query(
+            collection(db, "ordres"),
+            where("userId", "==", userId),
+            orderBy("createdAt", "desc")
+        );
 
-    // Options disponibles
-    const allOptions = [
-        { value: 'btc', text: 'Bitcoin (BTC)' },
-        { value: 'eth', text: 'Ethereum (ETH)' },
-        { value: 'usdt', text: 'Tether (USDT)' },
-        { value: 'eur', text: 'Euro (EUR)' },
-        { value: 'usd', text: 'Dollar (USD)' },
-        { value: 'gbp', text: 'Livre Sterling (GBP)' }
-    ];
+        onSnapshot(q, snapshot => {
+            ordersContainer.innerHTML = "";
 
-    // Gestion des changements de type d'ordre
-    orderTypeSelect.addEventListener('change', updateFormFields);
-
-    // Initialisation
-    updateFormFields();
-
-    // Soumission du formulaire
-    form.addEventListener('submit', handleFormSubmit);
-
-    // Gestion des boutons de type d'ordre
-    document.querySelectorAll('.order-type-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            console.log(`Filtrer les ordres par type: ${this.dataset.type}`);
-        });
-    });
-
-    // Animation des cartes
-    document.querySelectorAll('.card-style, .order-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-5px)';
-            card.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-            card.style.boxShadow = '';
-        });
-    });
-
-    // Navigation footer
-    document.querySelectorAll('.nav-button').forEach(button => {
-        button.addEventListener('click', function (e) {
-            if (!this.classList.contains('active')) {
-                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
+            if (snapshot.empty) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
+                        <p style="color: #fff;">Vos ordres actifs apparaîtront ici</p>
+                    </div>
+                `;
+                return;
             }
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const card = createOrderCard(data.type, data.assetLabel, data.montant);
+                ordersContainer.appendChild(card);
+            });
         });
-    });
+    }
+
+    function setupEventListeners() {
+        // Gestion des changements de type d'ordre
+        orderTypeSelect.addEventListener('change', updateFormFields);
+
+        // Gestion des boutons de type d'ordre
+        document.querySelectorAll('.order-type-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                console.log(`Filtrer les ordres par type: ${this.dataset.type}`);
+            });
+        });
+
+        // Animation des cartes
+        document.querySelectorAll('.card-style, .order-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Navigation footer
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function (e) {
+                if (!this.classList.contains('active')) {
+                    document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    }
 
     function updateFormFields() {
         const orderType = orderTypeSelect.value;
@@ -182,30 +204,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function calculateRepayment() {
         const amount = parseFloat(amountInput.value) || 0;
         limitInput.value = (amount * 1.03).toFixed(2);
-    }
-
-    function handleFormSubmit(e) {
-        e.preventDefault();
-
-        const orderType = orderTypeSelect.value;
-        const asset = assetSelect.value;
-        const assetText = assetSelect.selectedOptions[0].textContent;
-        const amount = amountInput.value;
-
-        // Créer la carte d'ordre
-        const orderCard = createOrderCard(orderType, assetText, amount);
-
-        // Afficher la carte
-        const noOrders = ordersContainer.querySelector('.no-orders');
-        if (noOrders) noOrders.remove();
-        ordersContainer.prepend(orderCard);
-
-        // Après 5s, afficher la progression et le PIN
-        setTimeout(() => showProgressAndPin(orderCard), 5000);
-
-        // Réinitialiser le formulaire
-        form.reset();
-        updateFormFields();
     }
 
     function createOrderCard(type, asset, amount) {
@@ -377,4 +375,7 @@ document.addEventListener('DOMContentLoaded', function () {
             progressBar.classList.add('bg-secondary');
         }
     }
+
+    // Initialisation
+    updateFormFields();
 });
