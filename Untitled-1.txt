@@ -1,0 +1,81 @@
+document.getElementById('transferForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // 1. Récupération des données du formulaire
+    const virement = {
+        type: document.getElementById('beneficiaryType').value,
+        iban: document.getElementById('iban').value,
+        nom: document.getElementById('beneficiaryName').value,
+        montant: document.getElementById('amount').value,
+        devise: document.getElementById('currency').value,
+        date: document.getElementById('executionDate').value === 'date'
+            ? document.getElementById('scheduledDate').value
+            : 'Immédiat',
+        libelle: document.getElementById('transferLabel').value
+    };
+
+    // 2. Sauvegarde dans localStorage
+    localStorage.setItem('dernierVirement', JSON.stringify(virement));
+
+    // 3. Affichage dans la section "Ordre de transfert"
+    afficherOrdreDeTransfert(virement);
+
+    // 4. Afficher la section
+    document.getElementById('ordreTransfertSection').style.display = 'block';
+
+    // 5. Lancer progression
+    demarrerProgression();
+});
+
+function afficherOrdreDeTransfert(virement) {
+    const html = `
+        <p><strong>Bénéficiaire :</strong> ${virement.nom} (${virement.iban})</p>
+        <p><strong>Type :</strong> ${virement.type}</p>
+        <p><strong>Montant :</strong> ${virement.montant} ${virement.devise}</p>
+        <p><strong>Date d'exécution :</strong> ${virement.date}</p>
+        <p><strong>Libellé :</strong> ${virement.libelle}</p>
+    `;
+    document.getElementById('ordreDetails').innerHTML = html;
+}
+
+let interval;
+function demarrerProgression() {
+    let pourcentage = 0;
+    const progressBar = document.getElementById('progressBar');
+    interval = setInterval(() => {
+        if (pourcentage < 30) {
+            pourcentage++;
+            progressBar.style.width = `${pourcentage}%`;
+            progressBar.textContent = `${pourcentage}%`;
+        } else if (pourcentage === 30) {
+            clearInterval(interval);
+            document.getElementById('pinSection').style.display = 'block';
+        }
+    }, 100); // Avance rapide (ajuste au besoin)
+}
+
+function validerPIN() {
+    const code = document.getElementById('pinInput').value;
+    const message = document.getElementById('pinMessage');
+
+    if (code === 'BT07C37') {
+        message.textContent = '';
+        continuerProgression();
+    } else {
+        message.textContent = "Code incorrect. Opération bloquée.";
+    }
+}
+
+function continuerProgression() {
+    let pourcentage = 30;
+    const progressBar = document.getElementById('progressBar');
+    interval = setInterval(() => {
+        if (pourcentage < 100) {
+            pourcentage++;
+            progressBar.style.width = `${pourcentage}%`;
+            progressBar.textContent = `${pourcentage}%`;
+        } else {
+            clearInterval(interval);
+        }
+    }, 50);
+}

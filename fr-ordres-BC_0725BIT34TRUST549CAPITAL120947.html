@@ -2,34 +2,37 @@
 <html lang="fr">
 
 <head>
-    <!-- Métadonnées de base -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>BitTrust Capital | Gestion des Ordres</title>
-    <meta name="description"
-        content="Gestion des ordres financiers BitTrust Capital - Passez et suivez vos ordres d'achat, vente et transfert">
-    <meta name="keywords" content="ordres financiers, investissement, trading, cryptomonnaies, BitTrust Capital">
-    <meta name="author" content="BitTrust Capital">
+    <title>BitTrust Capital | Virements Bancaires</title>
+    <meta name="description" content="Effectuez des virements bancaires sécurisés avec BitTrust Capital">
 
     <!-- Favicon -->
     <link rel="icon" href="images/logo/favicon.ico" type="image/x-icon">
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Animate CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        .confirmation-message {
+            font-size: 1rem;
+            color: var(--success-color);
+        }
+
+        #ordreTransfertSection {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
         :root {
             --primary-color: #0056b3;
             --secondary-color: #003366;
@@ -38,12 +41,22 @@
             --dark-color: #212529;
             --success-color: #28a745;
             --danger-color: #dc3545;
-            --warning-color: #ffc107;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
             padding-bottom: 80px;
+        }
+
+        body {
+            background: linear-gradient(135deg,
+                    #0056b3 0%,
+                    /* Bleu BitTrust */
+                    #dc3545 100%
+                    /* Rouge Bootstrap */
+                );
+            background-attachment: fixed;
         }
 
         .bank-header {
@@ -52,84 +65,38 @@
             padding: 15px 0;
             margin-bottom: 30px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 20px;
         }
 
-        .bank-header img {
-            height: 60px;
-        }
-
-        .card-style {
+        .transfer-card {
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: none;
-            background-color: rgba(255, 255, 255, 0.377);
-            backdrop-filter: blur(5px);
+            background-color: white;
         }
 
-        .card-style:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-            color: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 6px 15px rgba(0, 56, 179, 0.2);
-        }
-
-        .order-type-btn {
-            border-radius: 8px;
-            padding: 12px 0;
-            font-weight: 500;
+        .beneficiary-card {
+            border-left: 4px solid var(--success-color);
             transition: all 0.3s ease;
         }
 
-        .order-type-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
-        }
-
-        .order-card {
-            border-left: 4px solid;
-            transition: all 0.3s ease;
-        }
-
-        .order-card.buy {
-            border-left-color: var(--success-color);
-        }
-
-        .order-card.sell {
-            border-left-color: var(--danger-color);
-        }
-
-        .order-card.transfer {
-            border-left-color: var(--accent-color);
-        }
-
-        .order-card:hover {
+        .beneficiary-card:hover {
             transform: translateX(5px);
         }
 
-        .no-orders {
-            text-align: center;
-            padding: 40px 20px;
+
+        /* Style spécifique pour les virements */
+        .currency-flag {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;
         }
 
-        .no-orders i {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 15px;
+        .iban-input {
+            letter-spacing: 2px;
+            font-family: monospace;
         }
 
         .footer-nav {
@@ -175,126 +142,111 @@
             transform: translateY(-3px);
         }
 
-        /* Arrière-plan dégradé bleu-rouge */
-        body {
-            background: linear-gradient(135deg,
-                    rgba(179, 0, 0, 0.932) 0%,
-                    rgba(4, 0, 226, 0.452) 100%), rgba(255, 255, 255, 0.788);
-            background-attachment: fixed;
-            background-size: cover;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg,
-                    rgb(206, 0, 0) 0%,
-                    rgb(0, 4, 214) 100%);
-            z-index: -1;
-            pointer-events: none;
-            opacity: 0.1;
-        }
-
         @media (max-width: 768px) {
-            .bank-header img {
-                height: 50px;
+            .balance-amount {
+                font-size: 1.8rem;
             }
 
-            .order-type-btn {
-                padding: 10px 0;
-                font-size: 0.9rem;
+            .profile-picture {
+                width: 80px;
+                height: 80px;
             }
         }
     </style>
-
 </head>
 
 <body>
     <div class="container-fluid px-0">
-        <!-- Header avec logo -->
-        <header class="bank-header animate__animated animate__fadeIn">
-            <img src="images/logo/lg.png" alt="BitTrust Capital Logo" class="img-fluid">
-            <div class="flex-grow-1 text-center">
-                <h1 class="m-0 d-none d-md-block">BitTrust Capital - Gestion des Ordres</h1>
+        <!-- Header -->
+        <header class="bank-header">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <img src="images/logo/lg.png" alt="BitTrust Capital Logo" height="60">
+                    <h1 class="m-0 d-none d-md-block">Virements Bancaires</h1>
+                    <a href="index.html" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                </div>
             </div>
-            <a href="index.html" class="btn btn-primary rounded-pill d-flex align-items-center"
-                style="font-weight:600; min-width:110px;">
-                <i class="fas fa-home me-2"></i> Accueil
-            </a>
         </header>
 
         <main class="container">
-            <!-- Section Types d'Ordres -->
-            <section class="row justify-content-center animate__animated animate__fadeInUp mb-4">
-                <div class="col-lg-8 col-md-10">
-                    <div class="card-style p-3">
-                        <div class="row text-center">
-                            <div class="col-12 d-flex justify-content-center">
-                                <div class="col-md-4 mb-2 mb-md-0">
-                                    <button class="btn btn-outline-primary w-100 order-type-btn active" data-type="all">
-                                        <i class="fas fa-list me-2"></i>Tous les ordres
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Section Nouvel Ordre -->
-            <section class="row justify-content-center animate__animated animate__fadeInUp mb-4">
-                <div class="col-lg-8 col-md-10">
-                    <div class="card-style p-4">
-                        <h3 class="mb-4" style="color: #fff;"><i class="fas fa-plus-circle me-2"></i>Nouvel ordre</h3>
-                        <form>
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label class="form-label" style="color: #fff;">Type d'ordre</label>
-                                    <select class="form-select" id="orderType">
-                                        <option value="buy">Achat</option>
-                                        <option value="sell">Vente</option>
-                                        <option value="transfer">Transfert</option>
-                                        <option value="limit">Pret</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" style="color: #fff;" id="assetLabel">Choix de la
-                                        monnaie</label>
-                                    <select class="form-select" id="assetSelect">
-                                        <option value="btc">Bitcoin (BTC)</option>
-                                        <option value="eth">Ethereum (ETH)</option>
-                                        <option value="usdt">Tether (USDT)</option>
-                                        <option value="eur">Euro (EUR)</option>
-                                        <option value="usd">Dollar (USD)</option>
-                                        <option value="gbp">Livre Sterling (GBP)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label class="form-label" style="color: #fff;" id="amountLabel">Montant</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" placeholder="0.00" id="amountInput">
-                                        <span class="input-group-text" id="amountCurrency">GBP</span>
+            <!-- Nouveau virement -->
+            <section class="row justify-content-center mb-4">
+                <div class="col-lg-8">
+                    <div class="transfer-card p-4">
+                        <h3 class="mb-4"><i class="fas fa-money-bill-transfer me-2"></i>Nouveau virement</h3>
+
+                        <form id="transferForm">
+                            <!-- Sélection du bénéficiaire -->
+                            <div class="mb-4">
+                                <h5 class="mb-3"><i class="fas fa-user-tag me-2"></i>Bénéficiaire</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Type de bénéficiaire</label>
+                                        <select class="form-select" id="beneficiaryType" required>
+                                            <option value="external">Compte externe</option>
+                                            <option value="external">Compte BitTrust</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="externalBeneficiaryField">
+                                        <label class="form-label">IBAN</label>
+                                        <input type="text" class="form-control iban-input" id="iban"
+                                            placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXXX"
+                                            pattern="[A-Za-z]{2}[0-9]{2}[a-zA-Z0-9]{1,30}">
+                                    </div>
+                                    <div class="col-md-6 " id="externalBeneficiaryNameField">
+                                        <label class="form-label">Nom du bénéficiaire</label>
+                                        <input type="text" class="form-control" id="beneficiaryName">
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" style="color: #fff;" id="limitLabel">Prix limite</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" placeholder="0.00" id="limitInput">
-                                        <span class="input-group-text" id="limitCurrency">GBP</span>
+                            </div>
+
+                            <!-- Détails du virement -->
+                            <div class="mb-4">
+                                <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Montant</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Montant</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="amount" required>
+                                            <select class="form-select" id="currency" style="max-width: 120px;">
+                                                <option value="EUR" data-flag="eu">EUR</option>
+                                                <option value="USD" data-flag="us">USD</option>
+                                                <option value="GBP" data-flag="gb">GBP</option>
+                                                <option value="CHF" data-flag="ch">CHF</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <small class="text-muted" id="rateInfo" style="display: none;">Taux de
-                                        remboursement: 3%</small>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Date d'exécution</label>
+                                        <select class="form-select" id="executionDate">
+                                            <option value="now">Immédiat</option>
+                                            <option value="date">Date programmée</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 d-none" id="scheduledDateField">
+                                        <label class="form-label">Date programmée</label>
+                                        <input type="date" class="form-control" id="scheduledDate">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Passer l'ordre
+
+                            <!-- Référence -->
+                            <div class="mb-4">
+                                <h5 class="mb-3"><i class="fas fa-tag me-2"></i>Référence</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Libellé du virement</label>
+                                    <input type="text" class="form-control" id="transferLabel"
+                                        placeholder="Ex: Remboursement prêt" maxlength="140">
+                                </div>
+                            </div>
+
+                            <!-- Bouton de soumission -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Effectuer le virement
                                 </button>
                             </div>
                         </form>
@@ -302,48 +254,51 @@
                 </div>
             </section>
 
-            <!-- Section Ordres en Cours -->
-            <section class="row justify-content-center animate__animated animate__fadeInUp">
-                <div class="col-lg-8 col-md-10">
-                    <div class="card-style p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="m-0" style="color: #fff;"><i class="fas fa-tasks me-2"></i>Ordres en cours</h3>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown">
-                                    <i class="fas fa-filter me-1"></i>Filtrer
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Tous</a></li>
-                                    <li><a class="dropdown-item" href="#">Achats</a></li>
-                                    <li><a class="dropdown-item" href="#">Ventes</a></li>
-                                    <li><a class="dropdown-item" href="#">Transferts</a></li>
-                                </ul>
+            <!-- Ordre de transfert -->
+            <section class="row justify-content-center mt-4" id="ordreTransfertSection" style="display: none;">
+                <div class="col-lg-8">
+                    <div class="transfer-card p-4">
+                        <h3 class="mb-4"><i class="fas fa-file-invoice-dollar me-2"></i>Ordre de transfert</h3>
+                        <div id="ordreDetails" class="mb-3"></div>
+
+                        <div class="progress mb-3">
+                            <div id="progressBar"
+                                class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                style="width: 0%;">
+                                0%
                             </div>
                         </div>
 
-                        <div class="orders-container">
-                            <div class="no-orders">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h4 class="mt-3" style="color: #fff;">Aucun ordre en cours</h4>
-                                <p style="color: #fff;">Vos ordres actifs apparaîtront ici</p>
-                            </div>
+                        <div id="pinSection" style="display: none;">
+                            <label for="pinInput" class="form-label">Entrez le code PIN pour confirmer (contactez le
+                                service client) :</label>
+                            <input type="password" id="pinInput" class="form-control mb-2" placeholder="Code PIN...">
+                            <button class="btn btn-warning" onclick="validerPIN()">Valider le code</button>
+                            <div id="pinMessage" class="text-danger mt-2"></div>
                         </div>
                     </div>
                 </div>
             </section>
+            <button class="btn btn-outline-danger mt-3" onclick="resetHistorique()">🗑️ Réinitialiser
+                l'historique</button>
+
+
+
         </main>
 
-        <!-- Logo BitTrust en bas de page -->
+        <!-- Conteneur pour le logo BitTrust -->
         <div class="d-flex justify-content-center my-4">
-            <img src="images/logo/lg.png" alt="Logo BitTrust" style="height: 80px;">
+            <div id="bittrust-logo-container">
+                <!-- Ajoutez ici votre logo BitTrust -->
+                <img src="images/logo/lg.png" alt="Logo BitTrust" style="height: 80px;">
+            </div>
         </div>
     </div>
 
     <!-- Navigation footer -->
     <nav class="footer-nav">
         <div class="nav-buttons container">
-            <a href="fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button">
+            <a href="fr-profil-BC_0725BIT34TRUST549CAPITAL120947.html" class="nav-button ">
                 <i class="fas fa-user"></i>
                 <span>Profil</span>
             </a>
@@ -355,15 +310,14 @@
                 <i class="fas fa-history"></i>
                 <span>Historique</span>
             </a>
+
         </div>
     </nav>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Dans le head -->
-    <script src="js/ordres.js" type="module"></script>
-
+    <!-- Template Javascript -->
+    <script src="js/ordres.js"></script>
 
 </body>
 
